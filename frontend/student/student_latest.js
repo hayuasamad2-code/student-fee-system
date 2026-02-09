@@ -9,13 +9,22 @@ if (!token) {
     window.location.href = "../index.html";
 }
 
+// API Configuration
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5008'
+    : 'https://student-fee-backend-db3b.onrender.com';
+
+console.log("🚀 [FRONTEND] Student Dashboard");
+console.log("🌐 API URL:", API_URL);
+
 /////////////////////////////
 // API HELPER
 /////////////////////////////
 
 async function api(url, method = "GET", body = null) {
-
-    const res = await fetch(url, {
+    const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
+    
+    const res = await fetch(fullUrl, {
         method,
         headers: {
             "Content-Type": "application/json",
@@ -331,7 +340,7 @@ async function payNow() {
     formData.append("amount", amount);
     if (proofFile) formData.append("proof", proofFile);
 
-    const res = await fetch("/payments", {
+    const res = await fetch(`${API_URL}/payments`, {
         method: "POST",
         headers: {
             "Authorization": `Bearer ${token}`
@@ -361,7 +370,7 @@ async function updateMe(id) {
     }
 
     try {
-        const res = await fetch(`/api/update-student/${id}`, {
+        const res = await fetch(`${API_URL}/update-student/${id}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
