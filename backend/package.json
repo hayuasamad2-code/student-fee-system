@@ -1,0 +1,30 @@
+{
+  "name": "student-fee-backend",
+  "version": "1.0.0",
+  "description": "Student Fee Management System - Backend API",
+  "main": "server_v14.js",
+  "scripts": {
+    "start": "node server_v14.js",
+    "dev": "node server_v14.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": "18.x",
+    "npm": "9.x"
+  },
+  "keywords": ["student", "fee", "management", "api"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "msnodesqlv8": "^5.1.4",
+    "mssql": "^12.2.0",
+    "multer": "^2.0.2",
+    "mysql2": "^3.16.3",
+    "dotenv": "^16.0.3"
+  }
+}

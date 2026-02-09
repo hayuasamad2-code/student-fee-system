@@ -1,0 +1,12 @@
+{
+    "name": "student-system-frontend",
+    "version": "1.0.0",
+    "description": "Frontend for the student management system",
+    "main": "index.html",
+    "scripts": {
+        "start": "npx -y serve . -p 3000"
+    },
+    "dependencies": {
+        "serve": "^14.2.4"
+    }
+}
