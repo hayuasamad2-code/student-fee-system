@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
@@ -5,14 +6,35 @@ const jwt = require("jsonwebtoken");
 const { sql, poolPromise } = require("./db");
 const multer = require("multer");
 const fs = require("fs");
-
 const path = require("path");
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const app = express();
-app.use(cors());
+
+// CORS configuration
+const allowedOrigins = process.env.FRONTEND_URL 
+    ? [process.env.FRONTEND_URL, 'http://localhost:3000', 'http://localhost:5500']
+    : ['http://localhost:3000', 'http://localhost:5500'];
+
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true
+}));
 app.use(express.json());
 
-const SECRET = "supersecretkey";
+const SECRET = process.env.JWT_SECRET || "supersecretkey";
+const PORT = process.env.PORT || 5008;
+
+// Cloudinary configuration
+if (process.env.CLOUDINARY_CLOUD_NAME) {
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET
+    });
+    console.log("☁️ Cloudinary configured");
+}
 
 // AUTH middleware (MOVED TO TOP)
 function auth(req, res, next) {
@@ -150,19 +172,37 @@ app.post("/update-student/:id", auth, async (req, res) => {
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(express.static(path.join(__dirname, "../frontend")));
 
-// Multer configuration for file uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadDir = path.join(__dirname, "uploads");
-        if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
-const upload = multer({ storage });
+// Multer configuration - Use Cloudinary in production, local storage in development
+let upload;
+
+if (process.env.CLOUDINARY_CLOUD_NAME) {
+    // Production: Use Cloudinary
+    const cloudinaryStorage = new CloudinaryStorage({
+        cloudinary: cloudinary,
+        params: {
+            folder: 'student-payments',
+            allowed_formats: ['jpg', 'jpeg', 'png', 'pdf'],
+            transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
+        }
+    });
+    upload = multer({ storage: cloudinaryStorage });
+    console.log("📤 Using Cloudinary for file uploads");
+} else {
+    // Development: Use local storage
+    const localStorage = multer.diskStorage({
+        destination: (req, file, cb) => {
+            const uploadDir = path.join(__dirname, "uploads");
+            if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+            cb(null, uploadDir);
+        },
+        filename: (req, file, cb) => {
+            const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+            cb(null, uniqueSuffix + path.extname(file.originalname));
+        }
+    });
+    upload = multer({ storage: localStorage });
+    console.log("💾 Using local storage for file uploads");
+}
 
 app.get("/", (req, res) => res.send("Server is alive 🚀"));
 app.get("/login", (req, res) => res.redirect("/login/index.html"));
@@ -281,7 +321,12 @@ app.post("/payments", auth, upload.single("proof"), async (req, res) => {
         const { amount, month } = req.body;
         const student_id = req.user.role === 'admin' ? req.body.student_id : req.user.id;
         const status = req.user.role === 'admin' ? (req.body.status || 'paid') : 'paid';
-        const proof_url = req.file ? `/uploads/${req.file.filename}` : null;
+        
+        // Handle file URL - Cloudinary or local
+        let proof_url = null;
+        if (req.file) {
+            proof_url = req.file.path || `/uploads/${req.file.filename}`;
+        }
 
         const pool = await poolPromise;
 
@@ -422,4 +467,8 @@ app.post("/messages", auth, async (req, res) => {
     }
 });
 
-app.listen(5008, () => console.log(`🚀 [CLEAN] Server active on port 5008 - Started at: ${new Date().toLocaleTimeString()}`));
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📅 Started at: ${new Date().toLocaleTimeString()}`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+});

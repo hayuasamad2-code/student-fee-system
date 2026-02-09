@@ -12,19 +12,27 @@
     "node": "18.x",
     "npm": "9.x"
   },
-  "keywords": ["student", "fee", "management", "api"],
+  "keywords": [
+    "student",
+    "fee",
+    "management",
+    "api"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "cloudinary": "^2.9.0",
     "cors": "^2.8.6",
+    "dotenv": "^16.0.3",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "msnodesqlv8": "^5.1.4",
     "mssql": "^12.2.0",
     "multer": "^2.0.2",
+    "multer-storage-cloudinary": "^4.0.0",
     "mysql2": "^3.16.3",
-    "dotenv": "^16.0.3"
+    "pg": "^8.18.0"
   }
 }
