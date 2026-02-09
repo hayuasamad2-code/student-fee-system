@@ -2,7 +2,7 @@
   "name": "student-fee-backend",
   "version": "1.0.0",
   "description": "Student Fee Management System - Backend API",
-  "main": "server_v14.js",
+  "main": "server-postgres.js",
   "scripts": {
     "start": "node server-postgres.js",
     "dev": "node server_v14.js",
@@ -31,7 +31,6 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
-    "mysql2": "^3.16.3",
     "pg": "^8.18.0"
   }
 }
