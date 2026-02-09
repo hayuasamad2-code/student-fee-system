@@ -4,8 +4,9 @@
   "description": "Student Fee Management System - Backend API",
   "main": "server_v14.js",
   "scripts": {
-    "start": "node server_v14.js",
+    "start": "node server-postgres.js",
     "dev": "node server_v14.js",
+    "build": "npm install --legacy-peer-deps",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
@@ -23,7 +24,7 @@
   "type": "commonjs",
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "cloudinary": "^2.9.0",
+    "cloudinary": "^1.41.3",
     "cors": "^2.8.6",
     "dotenv": "^16.0.3",
     "express": "^5.2.1",
