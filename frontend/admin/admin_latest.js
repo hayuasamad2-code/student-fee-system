@@ -5,8 +5,10 @@
 const token = localStorage.getItem("token");
 
 if (!token) {
-    alert("Please login first!");
-    window.location.href = "../index.html";
+    showCustomshowCustomAlert("Please login first!");
+    setTimeout(() => {
+        window.location.href = "../index.html";
+    }, 1500);
 }
 
 // API Configuration
@@ -34,6 +36,67 @@ async function api(url, method = "GET", body = null) {
     });
 
     return res.json();
+}
+
+/////////////////////////////
+// CUSTOM ALERT (NO WEBSITE URL)
+/////////////////////////////
+
+function showCustomshowCustomAlert(message) {
+    // Remove existing alert if any
+    const existingAlert = document.getElementById('customAlert');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+    const existingOverlay = document.getElementById('alertOverlay');
+    if (existingOverlay) {
+        existingOverlay.remove();
+    }
+    
+    // Create custom alert
+    const alertDiv = document.createElement('div');
+    alertDiv.id = 'customAlert';
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 30px 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        z-index: 10000;
+        text-align: center;
+        min-width: 300px;
+        max-width: 90%;
+    `;
+    
+    alertDiv.innerHTML = `
+        <div style="font-size: 18px; color: #333; margin-bottom: 20px; font-weight: 500;">
+            ${message}
+        </div>
+        <button onclick="document.getElementById('customAlert').remove(); document.getElementById('alertOverlay').remove();" 
+                style="background: #4CAF50; color: white; border: none; padding: 10px 30px; 
+                       border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: 500;">
+            OK
+        </button>
+    `;
+    
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'alertOverlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 9999;
+    `;
+    
+    document.body.appendChild(overlay);
+    document.body.appendChild(alertDiv);
 }
 
 /////////////////////////////
@@ -443,7 +506,7 @@ async function createStudent() {
     const password = document.getElementById("password").value;
 
     if (!name || !username || !password) {
-        alert("Fill all fields!");
+        showCustomshowCustomAlert("Fill all fields!");
         return;
     }
 
@@ -464,9 +527,11 @@ async function createStudent() {
     });
 
     const data = await res.json();
-    alert(data.message || "Saved successfully");
+    showCustomshowCustomAlert(data.message || "Saved successfully");
 
-    showModule("students");
+    setTimeout(() => {
+        showModule("students");
+    }, 1500);
 }
 
 /////////////////////////////
@@ -512,7 +577,7 @@ async function saveStudentEdit(id) {
     const password = document.getElementById("edit_password").value;
 
     if (!name || !username) {
-        alert("Name and Username are required!");
+        showCustomAlert("Name and Username are required!");
         return;
     }
 
@@ -538,11 +603,13 @@ async function saveStudentEdit(id) {
             throw new Error(data.message || `Status: ${res.status}`);
         }
 
-        alert(data.message || "Updated successfully");
-        showModule("students");
+        showCustomAlert(data.message || "Updated successfully");
+        setTimeout(() => {
+            showModule("students");
+        }, 1500);
     } catch (err) {
         console.error("Update failed:", err);
-        alert("Update failed: " + err.message);
+        showCustomAlert("Update failed: " + err.message);
     }
 }
 
@@ -556,7 +623,7 @@ async function updateMe(id) {
     const password = document.getElementById("me_password").value;
 
     if (!name || !username) {
-        alert("Name and Username are required!");
+        showCustomAlert("Name and Username are required!");
         return;
     }
 
@@ -582,11 +649,13 @@ async function updateMe(id) {
             throw new Error(data.message || `Status: ${res.status}`);
         }
 
-        alert(data.message || "Profile updated successfully");
-        showModule("profile");
+        showCustomAlert(data.message || "Profile updated successfully");
+        setTimeout(() => {
+            showModule("profile");
+        }, 1500);
     } catch (err) {
         console.error("Update failed:", err);
-        alert("Update failed: " + err.message);
+        showCustomAlert("Update failed: " + err.message);
     }
 }
 
@@ -597,7 +666,7 @@ async function updateMe(id) {
 async function deleteMessage(id) {
     if (!confirm("Are you sure you want to delete this message?")) return;
 
-    const url = `/delete-message/${id}`;
+    const url = `${API_URL}/delete-message/${id}`;
     console.log("📡 CALLING DELETE:", url);
 
     try {
@@ -620,10 +689,13 @@ async function deleteMessage(id) {
             throw new Error(data.message || `Status: ${res.status}`);
         }
 
-        showModule("discussion");
+        showCustomAlert("Message deleted successfully");
+        setTimeout(() => {
+            showModule("discussion");
+        }, 1500);
     } catch (err) {
         console.error("Delete failed:", err);
-        alert("Delete failed: " + err.message);
+        showCustomAlert("Delete failed: " + err.message);
     }
 }
 
@@ -638,7 +710,7 @@ async function deletePayment(id) {
         return;
     }
 
-    const url = `/delete-payment/${id}`;
+    const url = `${API_URL}/delete-payment/${id}`;
     console.log(`📡 [API] Fetching: ${url}, Method: POST`);
 
     try {
@@ -665,11 +737,13 @@ async function deletePayment(id) {
             throw new Error(data.message || `Status: ${res.status}`);
         }
 
-        alert(data.message || "Payment deleted successfully");
-        showModule("payments");
+        showCustomAlert(data.message || "Payment deleted successfully");
+        setTimeout(() => {
+            showModule("payments");
+        }, 1500);
     } catch (err) {
         console.error("❌ [API] Delete failed error:", err);
-        alert("Delete failed: " + err.message);
+        showCustomAlert("Delete failed: " + err.message);
     }
 }
 
@@ -731,10 +805,12 @@ async function clearOldLogs() {
             }
         });
         const data = await res.json();
-        alert(data.message);
-        showModule("security");
+        showCustomAlert(data.message);
+        setTimeout(() => {
+            showModule("security");
+        }, 1500);
     } catch (err) {
-        alert("Failed to clear logs: " + err.message);
+        showCustomAlert("Failed to clear logs: " + err.message);
     }
 }
 
@@ -745,3 +821,4 @@ async function clearOldLogs() {
 showModule("dashboard");
 updateNotificationBadge();
 updateSecurityNotification();
+
