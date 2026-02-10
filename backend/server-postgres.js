@@ -4,6 +4,7 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
+const compression = require("compression");
 const fs = require("fs");
 const path = require("path");
 const cloudinary = require('cloudinary').v2;
@@ -38,6 +39,11 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Enable gzip compression for better performance
+app.use(compression());
+console.log('📦 Compression enabled');
+
 app.use(express.json());
 
 const SECRET = process.env.JWT_SECRET || "supersecretkey";
