@@ -28,12 +28,12 @@ pool.on('error', (err) => {
     console.error('❌ PostgreSQL error:', err);
 });
 
-// CORS configuration - Allow all origins for now
-console.log('🌐 CORS: Allowing all origins');
-console.log('🌐 FRONTEND_URL:', process.env.FRONTEND_URL);
+// CORS configuration - Restrict to specific frontend
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://fascinating-valkyrie-02e61c.netlify.app';
+console.log('🌐 CORS: Allowing origin:', FRONTEND_URL);
 
 app.use(cors({
-    origin: true, // Allow all origins temporarily
+    origin: FRONTEND_URL,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
