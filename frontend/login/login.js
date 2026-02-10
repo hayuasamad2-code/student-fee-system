@@ -27,13 +27,20 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 </div>
 `;
 
+// API Configuration
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5008'
+    : 'https://student-fee-backend-db3b.onrender.com';
+
+console.log("🌐 API URL:", API_URL);
+
 document.getElementById("loginBtn").onclick = async () => {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
     const msg = document.getElementById("msg");
 
     try {
-        const res = await fetch("/login", {
+        const res = await fetch(`${API_URL}/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password })
