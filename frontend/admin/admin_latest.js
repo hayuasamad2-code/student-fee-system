@@ -5,7 +5,7 @@
 const token = localStorage.getItem("token");
 
 if (!token) {
-    showCustomshowCustomAlert("Please login first!");
+    showCustomAlert("Please login first!");
     setTimeout(() => {
         window.location.href = "../index.html";
     }, 1500);
@@ -42,7 +42,7 @@ async function api(url, method = "GET", body = null) {
 // CUSTOM ALERT (NO WEBSITE URL)
 /////////////////////////////
 
-function showCustomshowCustomAlert(message) {
+function showCustomAlert(message) {
     // Remove existing alert if any
     const existingAlert = document.getElementById('customAlert');
     if (existingAlert) {
@@ -506,7 +506,7 @@ async function createStudent() {
     const password = document.getElementById("password").value;
 
     if (!name || !username || !password) {
-        showCustomshowCustomAlert("Fill all fields!");
+        showCustomAlert("Fill all fields!");
         return;
     }
 
@@ -527,7 +527,7 @@ async function createStudent() {
     });
 
     const data = await res.json();
-    showCustomshowCustomAlert(data.message || "Saved successfully");
+    showCustomAlert(data.message || "Saved successfully");
 
     setTimeout(() => {
         showModule("students");
