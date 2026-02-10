@@ -6,7 +6,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 
 <div class="modal" id="modal" style="display:flex;">
     <div class="card">
-        <h2 style="text-align:center;">Login</h2>
+        <h2 style="text-align:center;">HRU Weltehi Student</h2>
 
         <label style="display:block; margin-top:10px; font-weight:bold; color: white;">User Name</label>
         <div class="input-box">
