@@ -28,25 +28,12 @@ pool.on('error', (err) => {
     console.error('❌ PostgreSQL error:', err);
 });
 
-// CORS configuration
-const allowedOrigins = process.env.FRONTEND_URL 
-    ? [process.env.FRONTEND_URL, 'http://localhost:3000', 'http://localhost:5500', 'http://localhost:5008']
-    : ['http://localhost:3000', 'http://localhost:5500', 'http://localhost:5008'];
-
-console.log('🌐 CORS Allowed Origins:', allowedOrigins);
+// CORS configuration - Allow all origins for now
+console.log('🌐 CORS: Allowing all origins');
+console.log('🌐 FRONTEND_URL:', process.env.FRONTEND_URL);
 
 app.use(cors({
-    origin: function(origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-        
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            console.log('❌ CORS blocked origin:', origin);
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: true, // Allow all origins temporarily
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
