@@ -301,6 +301,15 @@ app.post("/update-student/:id", auth, async (req, res) => {
             return res.status(403).json({ message: "Forbidden: Not authorized" });
         }
 
+        // Check if username is being changed and if new username already exists
+        const currentUser = await pool.query('SELECT username FROM users WHERE id = $1', [studentId]);
+        if (currentUser.rows.length > 0 && currentUser.rows[0].username !== username) {
+            const existingUser = await pool.query('SELECT id FROM users WHERE username = $1 AND id != $2', [username, studentId]);
+            if (existingUser.rows.length > 0) {
+                return res.status(400).json({ message: "Username already taken" });
+            }
+        }
+
         if (password) {
             const hashed = await bcrypt.hash(password, 10);
             await pool.query(
