@@ -321,13 +321,19 @@ app.get("/payments", auth, async (req, res) => {
 
 app.post("/payments", auth, upload.single("proof"), async (req, res) => {
     try {
+        console.log("📥 Payment request received");
+        console.log("📋 Body:", req.body);
+        console.log("📎 File:", req.file ? { filename: req.file.filename, path: req.file.path } : "No file");
+        
         const { amount, month } = req.body;
         const student_id = req.user.role === 'admin' ? req.body.student_id : req.user.id;
         const status = req.user.role === 'admin' ? (req.body.status || 'paid') : 'paid';
         
         let proof_url = null;
         if (req.file) {
+            // Cloudinary returns the URL in req.file.path
             proof_url = req.file.path || `/uploads/${req.file.filename}`;
+            console.log("✅ File uploaded to:", proof_url);
         }
 
         // Check for duplicate
@@ -345,9 +351,10 @@ app.post("/payments", auth, upload.single("proof"), async (req, res) => {
             [student_id, amount, month, status, proof_url]
         );
 
+        console.log("✅ Payment saved successfully");
         res.json({ message: "Saved successfully" });
     } catch (err) {
-        console.log(err);
+        console.error("❌ Payment error:", err);
         res.status(500).json({ message: err.message });
     }
 });

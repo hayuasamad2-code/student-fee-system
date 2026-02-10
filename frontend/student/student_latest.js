@@ -325,34 +325,57 @@ async function showModule(module) {
 /////////////////////////////
 
 async function payNow() {
+    try {
+        const month = document.getElementById("month").value;
+        const amount = document.getElementById("amount").value;
+        const proofFile = document.getElementById("proof").files[0];
 
-    const month = document.getElementById("month").value;
-    const amount = document.getElementById("amount").value;
-    const proofFile = document.getElementById("proof").files[0];
+        if (!amount) {
+            alert("Enter payment amount!");
+            return;
+        }
 
-    if (!amount) {
-        alert("Enter payment amount!");
-        return;
+        console.log("📤 Submitting payment:", { month, amount, hasFile: !!proofFile });
+        
+        const formData = new FormData();
+        formData.append("month", month);
+        formData.append("amount", amount);
+        if (proofFile) {
+            console.log("📎 File details:", {
+                name: proofFile.name,
+                size: proofFile.size,
+                type: proofFile.type
+            });
+            formData.append("proof", proofFile);
+        }
+
+        const res = await fetch(`${API_URL}/payments`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        console.log("📡 Response status:", res.status);
+        
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error("❌ Error response:", errorText);
+            alert(`Error: ${errorText}`);
+            return;
+        }
+
+        const data = await res.json();
+        console.log("✅ Success:", data);
+        alert(data.message || "Saved successfully");
+
+        // auto redirect
+        showModule("history");
+    } catch (error) {
+        console.error("❌ Payment error:", error);
+        alert("Error submitting payment: " + error.message);
     }
-
-    const formData = new FormData();
-    formData.append("month", month);
-    formData.append("amount", amount);
-    if (proofFile) formData.append("proof", proofFile);
-
-    const res = await fetch(`${API_URL}/payments`, {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${token}`
-        },
-        body: formData
-    });
-
-    const data = await res.json();
-    alert(data.message || "Saved successfully");
-
-    // auto redirect
-    showModule("history");
 }
 
 /////////////////////////////
