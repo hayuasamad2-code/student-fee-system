@@ -29,12 +29,28 @@ pool.on('error', (err) => {
     console.error('❌ PostgreSQL error:', err);
 });
 
-// CORS configuration - Restrict to specific frontend
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://fascinating-valkyrie-02e61c.netlify.app';
-console.log('🌐 CORS: Allowing origin:', FRONTEND_URL);
+// CORS configuration - Allow multiple origins
+const allowedOrigins = [
+    'https://student-fee-system.vercel.app',
+    'https://weltehi-student-union.vercel.app',
+    'https://fascinating-valkyrie-02e61c.netlify.app',
+    process.env.FRONTEND_URL
+].filter(Boolean);
+
+console.log('🌐 CORS: Allowing origins:', allowedOrigins);
 
 app.use(cors({
-    origin: FRONTEND_URL,
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log('❌ CORS blocked origin:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
