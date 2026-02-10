@@ -168,6 +168,14 @@ app.get("/setup-database", async (req, res) => {
             );
         `);
         
+        // Create indexes for better performance
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_payments_student_id ON payments(student_id);
+            CREATE INDEX IF NOT EXISTS idx_payments_month ON payments(month);
+            CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
+            CREATE INDEX IF NOT EXISTS idx_failed_logins_username ON failed_logins(username);
+        `);
+        
         // Create admin user
         const hashed = await bcrypt.hash("admin123", 10);
         await pool.query(
@@ -175,7 +183,7 @@ app.get("/setup-database", async (req, res) => {
             ["Main Admin", "admin", hashed, "admin"]
         );
         
-        res.send("✅ Database setup complete! Tables created and admin user added. You can now login with username: admin, password: admin123");
+        res.send("✅ Database setup complete! Tables created, indexes added, and admin user added. You can now login with username: admin, password: admin123");
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: err.message, error: err.toString() });
