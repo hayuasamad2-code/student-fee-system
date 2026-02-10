@@ -325,15 +325,35 @@ async function showModule(module) {
 /////////////////////////////
 
 async function payNow() {
+    const payButton = document.querySelector('.pay-btn');
+    const originalText = payButton.innerHTML;
+    const originalBg = payButton.style.backgroundColor;
+    
     try {
         const month = document.getElementById("month").value;
         const amount = document.getElementById("amount").value;
         const proofFile = document.getElementById("proof").files[0];
 
         if (!amount) {
-            alert("Enter payment amount!");
+            showCustomAlert("Enter payment amount!");
             return;
         }
+
+        // Show beautiful loading state
+        payButton.disabled = true;
+        payButton.innerHTML = '<span style="display: inline-flex; align-items: center; gap: 8px;"><span style="animation: spin 1s linear infinite; display: inline-block;">⏳</span> Uploading...</span>';
+        payButton.style.opacity = '0.8';
+        payButton.style.cursor = 'not-allowed';
+        
+        // Add spin animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
 
         console.log("📤 Submitting payment:", { month, amount, hasFile: !!proofFile });
         
@@ -362,20 +382,128 @@ async function payNow() {
         if (!res.ok) {
             const errorText = await res.text();
             console.error("❌ Error response:", errorText);
-            alert(`Error: ${errorText}`);
+            
+            // Reset button
+            payButton.disabled = false;
+            payButton.innerHTML = originalText;
+            payButton.style.opacity = '1';
+            payButton.style.cursor = 'pointer';
+            
+            showCustomAlert(`Error: ${errorText}`);
             return;
         }
 
         const data = await res.json();
         console.log("✅ Success:", data);
-        alert(data.message || "Saved successfully");
-
-        // auto redirect
-        showModule("history");
+        
+        // Show success state briefly
+        payButton.innerHTML = '<span style="display: inline-flex; align-items: center; gap: 8px;">✅ Success!</span>';
+        payButton.style.backgroundColor = '#28a745';
+        
+        setTimeout(() => {
+            showCustomAlert("Saved successfully");
+            // Auto redirect after closing alert
+            setTimeout(() => {
+                showModule("history");
+            }, 1500);
+        }, 800);
+        
     } catch (error) {
         console.error("❌ Payment error:", error);
-        alert("Error submitting payment: " + error.message);
+        
+        // Reset button on error
+        payButton.disabled = false;
+        payButton.innerHTML = originalText;
+        payButton.style.opacity = '1';
+        payButton.style.cursor = 'pointer';
+        payButton.style.backgroundColor = originalBg;
+        
+        showCustomAlert("Error submitting payment: " + error.message);
     }
+}
+
+// Beautiful custom alert (no website URL)
+function showCustomAlert(message) {
+    // Remove existing alert if any
+    const existingAlert = document.getElementById('customAlert');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+    const existingOverlay = document.getElementById('alertOverlay');
+    if (existingOverlay) {
+        existingOverlay.remove();
+    }
+    
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'alertOverlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        z-index: 9999;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    // Create beautiful alert
+    const alertDiv = document.createElement('div');
+    alertDiv.id = 'customAlert';
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 40px 50px;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        z-index: 10000;
+        text-align: center;
+        min-width: 350px;
+        max-width: 90%;
+        animation: slideIn 0.4s ease;
+    `;
+    
+    alertDiv.innerHTML = `
+        <div style="font-size: 48px; margin-bottom: 20px;">
+            ✅
+        </div>
+        <div style="font-size: 24px; color: white; margin-bottom: 30px; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+            ${message}
+        </div>
+        <button onclick="document.getElementById('customAlert').remove(); document.getElementById('alertOverlay').remove();" 
+                style="background: white; color: #667eea; border: none; padding: 12px 40px; 
+                       border-radius: 25px; cursor: pointer; font-size: 18px; font-weight: 600;
+                       box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: all 0.3s ease;">
+            OK
+        </button>
+    `;
+    
+    // Add animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { 
+                transform: translate(-50%, -60%);
+                opacity: 0;
+            }
+            to { 
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(overlay);
+    document.body.appendChild(alertDiv);
 }
 
 /////////////////////////////
