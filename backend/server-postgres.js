@@ -92,11 +92,13 @@ if (process.env.CLOUDINARY_CLOUD_NAME) {
         cloudinary: cloudinary,
         params: {
             folder: 'student-payments',
-            allowed_formats: ['jpg', 'jpeg', 'png', 'pdf'],
-            transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
+            allowed_formats: ['jpg', 'jpeg', 'png', 'pdf']
         }
     });
-    upload = multer({ storage: cloudinaryStorage });
+    upload = multer({ 
+        storage: cloudinaryStorage,
+        limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+    });
     console.log("📤 Using Cloudinary for file uploads");
 } else {
     const localStorage = multer.diskStorage({
@@ -110,7 +112,10 @@ if (process.env.CLOUDINARY_CLOUD_NAME) {
             cb(null, uniqueSuffix + path.extname(file.originalname));
         }
     });
-    upload = multer({ storage: localStorage });
+    upload = multer({ 
+        storage: localStorage,
+        limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+    });
     console.log("💾 Using local storage for file uploads");
 }
 
@@ -319,7 +324,15 @@ app.get("/payments", auth, async (req, res) => {
     }
 });
 
-app.post("/payments", auth, upload.single("proof"), async (req, res) => {
+app.post("/payments", auth, (req, res, next) => {
+    upload.single("proof")(req, res, (err) => {
+        if (err) {
+            console.error("❌ Multer error:", err);
+            return res.status(400).json({ message: "File upload error: " + err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
     try {
         console.log("📥 Payment request received");
         console.log("📋 Body:", req.body);
