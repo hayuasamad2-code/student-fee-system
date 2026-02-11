@@ -458,6 +458,37 @@ async function showModule(module) {
                         ${loginRows}
                     </table>
                 </div>
+            </div>
+
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <h2 style="color: #059669; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-sign-in-alt"></i> Successful Logins
+                        </h2>
+                        <p style="color: #64748b; margin-top: 5px;">Users who logged in successfully (last 100)</p>
+                    </div>
+                    <button onclick="clearLoginHistory()" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        Clear History (>1 hour)
+                    </button>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <tr>
+                            <th>Username</th>
+                            <th>IP Address</th>
+                            <th>Login Time</th>
+                        </tr>
+                        ${(await api(`/security/login-history?t=${timestamp}`)).map(l => `
+                            <tr>
+                                <td><span style="font-weight: 600; color: #059669;">${l.username}</span></td>
+                                <td>${l.ip_address}</td>
+                                <td>${new Date(l.login_time).toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                </div>
             </div>`;
         } catch (err) {
             content.innerHTML = `
@@ -811,6 +842,30 @@ async function clearOldLogs() {
         }, 1500);
     } catch (err) {
         showCustomAlert("Failed to clear logs: " + err.message);
+    }
+}
+
+/////////////////////////////
+// CLEAR LOGIN HISTORY
+/////////////////////////////
+
+async function clearLoginHistory() {
+    if (!confirm("Clear login history older than 1 hour?")) return;
+    
+    try {
+        const res = await fetch(`${API_URL}/security/clear-login-history`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+        const data = await res.json();
+        showCustomAlert(data.message);
+        setTimeout(() => {
+            showModule("security");
+        }, 1500);
+    } catch (err) {
+        showCustomAlert("Failed to clear login history: " + err.message);
     }
 }
 
