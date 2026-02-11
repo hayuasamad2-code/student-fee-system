@@ -546,7 +546,7 @@ app.get("/security/alerts", auth, async (req, res) => {
 app.post("/security/clear-logs", auth, async (req, res) => {
     if (req.user.role !== "admin") return res.status(403).json({ message: "Forbidden" });
     try {
-        await pool.query("DELETE FROM failed_logins WHERE attempt_time < NOW() - INTERVAL '7 days'");
+        await pool.query("DELETE FROM failed_logins WHERE attempt_time < NOW() - INTERVAL '1 hour'");
         res.json({ message: "Old logs cleared successfully" });
     } catch (err) {
         console.log(err);

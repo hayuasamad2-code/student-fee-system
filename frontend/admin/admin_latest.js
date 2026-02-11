@@ -442,7 +442,7 @@ async function showModule(module) {
                         <p style="color: #64748b; margin-top: 5px;">Recent failed login attempts (last 50)</p>
                     </div>
                     <button onclick="clearOldLogs()" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                        Clear Old Logs
+                        Clear Logs (>1 hour)
                     </button>
                 </div>
 
@@ -795,7 +795,7 @@ setInterval(() => {
 /////////////////////////////
 
 async function clearOldLogs() {
-    if (!confirm("Clear security logs older than 7 days?")) return;
+    if (!confirm("Clear security logs older than 1 hour?")) return;
     
     try {
         const res = await fetch(`${API_URL}/security/clear-logs`, {
