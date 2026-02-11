@@ -350,12 +350,27 @@ app.post("/update-student/:id", auth, async (req, res) => {
 // Payments
 app.get("/payments", auth, async (req, res) => {
     try {
-        const result = await pool.query(`
-            SELECT p.*, u.name as studentname 
-            FROM payments p
-            JOIN users u ON p.student_id = u.id
-            ORDER BY p.created_at DESC
-        `);
+        let result;
+        
+        // If admin, show all payments. If student, show only their payments
+        if (req.user.role === 'admin') {
+            result = await pool.query(`
+                SELECT p.*, u.name as studentname 
+                FROM payments p
+                JOIN users u ON p.student_id = u.id
+                ORDER BY p.created_at DESC
+            `);
+        } else {
+            // Student can only see their own payments
+            result = await pool.query(`
+                SELECT p.*, u.name as studentname 
+                FROM payments p
+                JOIN users u ON p.student_id = u.id
+                WHERE p.student_id = $1
+                ORDER BY p.created_at DESC
+            `, [req.user.id]);
+        }
+        
         res.send(result.rows);
     } catch (err) {
         console.log(err);
