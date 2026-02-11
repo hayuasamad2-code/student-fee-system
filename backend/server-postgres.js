@@ -188,14 +188,6 @@ app.get("/setup-database", async (req, res) => {
                 reason VARCHAR(255),
                 attempt_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-            
-            CREATE TABLE IF NOT EXISTS login_history (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                username VARCHAR(255),
-                ip_address VARCHAR(100),
-                login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
         `);
         
         // Create indexes for better performance
@@ -204,7 +196,6 @@ app.get("/setup-database", async (req, res) => {
             CREATE INDEX IF NOT EXISTS idx_payments_month ON payments(month);
             CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
             CREATE INDEX IF NOT EXISTS idx_failed_logins_username ON failed_logins(username);
-            CREATE INDEX IF NOT EXISTS idx_login_history_time ON login_history(login_time);
         `);
         
         // Create admin user
@@ -262,13 +253,6 @@ app.post("/login", async (req, res) => {
         }
 
         const token = jwt.sign({ id: user.id, role: user.role }, SECRET, { expiresIn: "1d" });
-        
-        // Track successful login
-        await pool.query(
-            'INSERT INTO login_history (user_id, username, ip_address) VALUES ($1, $2, $3)',
-            [user.id, user.username, ipAddress]
-        );
-        
         res.send({ token, role: user.role });
     } catch (err) {
         console.log(err);
@@ -564,35 +548,6 @@ app.post("/security/clear-logs", auth, async (req, res) => {
     try {
         await pool.query("DELETE FROM failed_logins WHERE attempt_time < NOW() - INTERVAL '1 hour'");
         res.json({ message: "Old logs cleared successfully" });
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// Get login history (Admin only)
-app.get("/security/login-history", auth, async (req, res) => {
-    if (req.user.role !== "admin") return res.status(403).json({ message: "Forbidden" });
-    try {
-        const result = await pool.query(`
-            SELECT id, username, ip_address, login_time 
-            FROM login_history 
-            ORDER BY login_time DESC 
-            LIMIT 100
-        `);
-        res.json(result.rows);
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// Clear login history older than 1 hour (Admin only)
-app.post("/security/clear-login-history", auth, async (req, res) => {
-    if (req.user.role !== "admin") return res.status(403).json({ message: "Forbidden" });
-    try {
-        await pool.query("DELETE FROM login_history WHERE login_time < NOW() - INTERVAL '1 hour'");
-        res.json({ message: "Old login history cleared successfully" });
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: err.message });
