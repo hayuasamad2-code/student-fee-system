@@ -269,7 +269,7 @@ async function showModule(module) {
 
         let rows = payments.map(p => `
             <tr>
-                <td>${p.studentName || p.student_id}</td>
+                <td>${p.studentname || p.student_id}</td>
                 <td>${p.month}</td>
                 <td>${p.amount} ETB</td>
                 <td>${p.status}</td>
